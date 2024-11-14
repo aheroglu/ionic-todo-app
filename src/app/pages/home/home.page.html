@@ -1,0 +1,184 @@
+<ion-content [fullscreen]="true">
+  <p>
+    <ion-title style="font-size: 1.5rem; font-weight: bold"
+      >Yapılacaklar</ion-title
+    >
+  </p>
+
+  <ng-container *ngIf="todos.length > 0; else noTodos">
+    <ion-list [inset]="true" lines="none" style="background-color: transparent">
+      @for (todo of todos; track todo.id) {
+      <ion-item-sliding class="ion-margin-bottom" style="border-radius: 15px">
+        <ion-item
+          [color]="isPastDue(todo.date) ? 'danger':'light'"
+          [detail]="true"
+        >
+          <ion-label>
+            <h2>{{ todo.title }}</h2>
+            <!-- <h2>Markete git ve marketten sebze meyve al</h2> -->
+            <h3>
+              <strong>Tarih:</strong> {{ todo.date | date : 'd MMMM EEEE HH:mm'
+              }}
+            </h3>
+          </ion-label>
+        </ion-item>
+
+        <ion-item-options side="start">
+          <ion-item-option (click)="completeTodo(todo.id)" color="primary">
+            <ion-icon name="checkmark" slot="icon-only"></ion-icon>
+          </ion-item-option>
+        </ion-item-options>
+        <ion-item-options side="end">
+          <ion-item-option
+            (click)="getTodo(todo)"
+            (click)="openModal('update')"
+            color="success"
+          >
+            <ion-icon
+              slot="icon-only"
+              name="create-outline"
+              color="light"
+            ></ion-icon>
+          </ion-item-option>
+          <ion-item-option (click)="deleteTodo(todo.id)" color="danger">
+            <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+          </ion-item-option>
+        </ion-item-options>
+      </ion-item-sliding>
+      }
+    </ion-list>
+  </ng-container>
+
+  <ng-template #noTodos>
+    <div class="no-todos">
+      <ion-icon id="sad-icon" name="sad"></ion-icon>
+      <p style="font-size: 1.5rem">
+        <ion-label>Hiç Görev Yok</ion-label>
+      </p>
+    </div>
+  </ng-template>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button (click)="openModal('create')">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>
+
+<ion-modal [isOpen]="isCreateModalOpen">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Yeni Görev Ekle</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeModal('create')">İptal</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <form #form="ngForm" (ngSubmit)="addTodo(form)">
+        <ion-item class="ion-margin-bottom ion-no-border" color="transparent">
+          <ion-input
+            [(ngModel)]="createModel.title"
+            name="title"
+            placeholder="Görev Başlığı"
+            required
+          ></ion-input>
+        </ion-item>
+        <ion-item
+          class="ion-margin-bottom ion-padding-bottom ion-no-border"
+          color="transparent"
+        >
+          <ion-grid class="ion-no-padding ion-no-margin">
+            <ion-row class="ion-margin-bottom">
+              <ion-label>Görev Tarihi</ion-label>
+            </ion-row>
+            <ion-row>
+              <ion-datetime
+                locale="tr-TR"
+                hourCycle="h23"
+                presentation="date-time"
+                [min]="minDate"
+                cancelText="Vazgeç"
+                clearText="Temizle"
+                doneText="Tamam"
+                color="primary"
+                (ionChange)="onDateChange($event, 'create')"
+                required
+              >
+                <span slot="time-label">Saat</span>
+              </ion-datetime>
+            </ion-row>
+          </ion-grid>
+        </ion-item>
+        <ion-button
+          (click)="addTodo(form)"
+          [disabled]="!form.valid"
+          type="submit"
+          expand="block"
+          >Görevi Ekle</ion-button
+        >
+      </form>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+
+<ion-modal [isOpen]="isUpdateModalOpen">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Görevi Güncelle</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeModal('update')">İptal</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <form #updateForm="ngForm" (ngSubmit)="updateTodo(updateForm)">
+        <ion-item class="ion-margin-bottom ion-no-border" color="transparent">
+          <ion-input
+            [(ngModel)]="updateModel.title"
+            name="updateTitle"
+            placeholder="Görev Başlığı"
+            required
+          ></ion-input>
+        </ion-item>
+        <ion-item
+          class="ion-margin-bottom ion-padding-bottom ion-no-border"
+          color="transparent"
+        >
+          <ion-grid class="ion-no-padding ion-no-margin">
+            <ion-row class="ion-margin-bottom">
+              <ion-label>Görev Tarihi</ion-label>
+            </ion-row>
+            <ion-row>
+              <ion-datetime
+                locale="tr-TR"
+                hourCycle="h23"
+                presentation="date-time"
+                [min]="minDate"
+                cancelText="Vazgeç"
+                clearText="Temizle"
+                doneText="Tamam"
+                color="primary"
+                [value]="updateModel.date | date:'yyyy-MM-ddTHH:mm:ss'"
+                (ionChange)="onDateChange($event, 'update')"
+                required
+              >
+                <span slot="time-label">Saat</span>
+              </ion-datetime>
+            </ion-row>
+          </ion-grid>
+        </ion-item>
+        <ion-button
+          (click)="updateTodo(updateForm)"
+          [disabled]="!updateForm.valid"
+          type="submit"
+          expand="block"
+          color="success"
+          >Görevi Güncelle</ion-button
+        >
+      </form>
+    </ion-content>
+  </ng-template>
+</ion-modal>
